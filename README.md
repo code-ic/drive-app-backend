@@ -1,1 +1,76 @@
-Test
+To run the app : 
+    uvicorn app.main:app --reload
+
+Plan : 
+# ------------------------------
+# 🔐 Authentication APIs
+# ------------------------------
+
+[X] POST /api/v1/register               # Register a new user
+[ ] POST /api/v1/login                  # Login (returns JWT token)
+[ ] GET  /api/v1/me                     # Get current logged-in user (requires token)
+
+# ------------------------------
+# 📁 Folder APIs
+# ------------------------------
+[ ] GET    /api/v1/me/folders                     # List all folders for current user  
+[ ] POST   /api/v1/me/folders                     # Create a new folder  
+[ ] GET    /api/v1/me/folders/{folder_id}         # Get a specific folder by ID  
+[ ] PATCH  /api/v1/me/folders/{folder_id}         # Rename/update folder  
+[ ] DELETE /api/v1/me/folders/{folder_id}         # Delete a folder  
+[ ] GET    /api/v1/me/folders/{folder_id}/files   # List files inside a folder  
+
+# ------------------------------
+# 📄 File APIs
+# ------------------------------
+[ ] POST   /api/v1/me/files                       # Upload a file  
+[ ] GET    /api/v1/me/files/{file_id}             # Get file metadata  
+[ ] GET    /api/v1/me/files/{file_id}/download    # Download file  
+[ ] PATCH  /api/v1/me/files/{file_id}             # Rename or move file  
+[ ] DELETE /api/v1/me/files/{file_id}             # Delete file  
+
+# ------------------------------
+# 🤝 Sharing APIs (Optional)
+# ------------------------------
+[ ] POST   /api/v1/me/files/{file_id}/share       # Share a file with another user  
+[ ] POST   /api/v1/me/folders/{folder_id}/share   # Share a folder with another user  
+[ ] GET    /api/v1/shared-with-me                 # View items shared with you  
+
+# ------------------------------
+# 🔄 Token Handling (Optional)
+# ------------------------------
+[ ] POST   /api/v1/refresh-token                  # Refresh token (if using refresh flow)  
+[ ] POST   /api/v1/logout                         # Logout  
+
+
+
+/drive-backend
+│
+├── /app
+│   ├── /core
+│   │   ├── config.py           # Configuration for app settings (e.g., database URI, JWT secret key)
+│   │   └── security.py         # Functions for hashing passwords, verifying JWT, etc.
+│   │
+│   ├── /models
+│   │   ├── user.py             # Pydantic models for user input validation
+│   │   └── token.py            # Pydantic models for JWT structure (optional)
+│   │
+│   ├── /services
+│   │   ├── auth_service.py     # Logic for user registration, login, token generation, etc.
+│   │   └── user_service.py     # Logic for user-related database operations
+│   │
+│   ├── /api
+│   │   ├── auth.py             # Routes for authentication (login, register)
+│   │   └── user.py             # Routes for user-specific data (e.g., get user info)
+│   │
+│   └── /db
+│       └── mongo.py            # MongoDB connection setup
+│
+├── /tests
+│   ├── test_auth.py            # Tests for authentication routes and logic
+│   └── test_user.py            # Tests for user-related routes and logic
+│
+└── main.py                     # The entry point of the app (FastAPI instance)
+
+
+
