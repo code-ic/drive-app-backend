@@ -12,3 +12,7 @@ class Token(BaseModel):
 class LoginUserDetails(BaseModel):
     username : str
     password : str
+
+class currentUser(BaseModel):
+    username : str
+    email : str

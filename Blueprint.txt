@@ -7,8 +7,8 @@ Plan :
 # ------------------------------
 
 [X] POST /api/v1/register               # Register a new user
-[ ] POST /api/v1/login                  # Login (returns JWT token)
-[ ] GET  /api/v1/me                     # Get current logged-in user (requires token)
+[X] POST /api/v1/login                  # Login (returns JWT token)
+[X] GET  /api/v1/me                     # Get current logged-in user (requires token)
 
 # ------------------------------
 # 📁 Folder APIs
