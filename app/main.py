@@ -1,11 +1,12 @@
 from typing import Union
 from fastapi import FastAPI
 from app.db.mongo import client, db
-from app.routes import user
+from app.routes import user,folders
 
 app = FastAPI()
 
 app.include_router(user.router, prefix="/api/v1")
+app.include_router(folders.router, prefix="/api/v1")
 
 
 # Dummy API for validating if server is working as expected
