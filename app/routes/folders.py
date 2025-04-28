@@ -14,26 +14,28 @@ async def get_folder(parent_folder_id : str | None = None, current_user: dict = 
 
     try: 
         username = current_user['username']
-        print("Log 1", username, parent_folder_id)
+        user_oid = await db["users"].find_one({"username" : username},{"_id" : 1})
+        # print("Inputs check : ", username, parent_folder_id, user_oid)
+
         if not parent_folder_id:
-            parent_folder_cursor = await db["folders"].find_one({"parent_folder_id" : None}, {"_id" : 1, "name" : 1})
+            parent_folder_cursor = await db["folders"].find_one({"parent_folder_id" : None, "owner" : user_oid["_id"]}, {"_id" : 1, "name" : 1})
             parent_folder_id = parent_folder_cursor["_id"]
-            print(parent_folder_id)
+            # print("Root Folder Present", parent_folder_id)
         else: 
             parent_folder_id = ObjectId(parent_folder_id)
 
         base_folder = await db["folders"].find_one({"_id" : parent_folder_id}, {"_id" : 1, "name" : 1})
-        print(base_folder)
+        # print(base_folder)
         base_folder["_id"] = str(base_folder["_id"])
 
         sub_folders = []
         sub_folder_cursor = db["folders"].find({"parent_folder_id" : parent_folder_id}, {"_id" : 1, "name" : 1})
-        print(sub_folder_cursor)
+        # print(sub_folder_cursor)
         async for folder in sub_folder_cursor:
             folder["_id"] = str(folder["_id"])
             sub_folders.append(folder)
 
-        print(sub_folders)
+        # print(sub_folders)
         result = {  "base_folder" : base_folder, 
                     "sub_folders" : sub_folders,
                     "folder_owner_username" : username
