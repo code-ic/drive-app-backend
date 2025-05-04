@@ -1,11 +1,13 @@
 
 from app.db.mongo import client, db
-from app.models.user import Users, LoginUserDetails
-from fastapi import APIRouter
+from app.models.user import Users, LoginUserDetails, Token
+from fastapi import APIRouter, Header, Depends
 from fastapi import HTTPException,status
-from app.services.auth_service import get_hashed_password, verify_password, create_access_token, decode_access_token
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials 
+from app.services.auth_service import get_hashed_password, verify_password, create_access_token,decode_access_token
 
 router = APIRouter()
+security = HTTPBearer()
 
 @router.get("/users", response_model=list[Users])
 async def get_users():
@@ -45,13 +47,15 @@ async def authenticate_user(loginDetails : LoginUserDetails):
         token_body = {"username" : loginDetails.username}
         access_token = create_access_token(token_body)
         return {"status" : 200, "access_token" : access_token, "token_type": "bearer"}
+
     except Exception as e:
         print("Logging Exception : ", e)
         raise HTTPException(status_code=500, detail=str(e))
     
 @router.get('/me')
-async def get_current_user(accessToken):
+async def get_current_user(token : HTTPAuthorizationCredentials = Depends(security)):
     credentials_exception = HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Could not validate credentials") 
+    accessToken = token.credentials
 
     try:
         payload = decode_access_token(accessToken)

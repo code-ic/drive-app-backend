@@ -2,7 +2,9 @@ from typing import Union
 from fastapi import FastAPI
 from app.db.mongo import client, db
 from app.routes import user,folders
+from fastapi.security import OAuth2PasswordBearer
 
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 app = FastAPI()
 
 app.include_router(user.router, prefix="/api/v1")

@@ -6,6 +6,7 @@ from passlib.context import CryptContext
 from jwt.exceptions import InvalidTokenError
 from app.core.config import settings
 from datetime import datetime, timedelta, timezone
+from fastapi import Header, HTTPException, status
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 default_timedelta = timedelta(minutes=int(settings.ACCESS_TOKEN_EXPIRE_MINUTES))

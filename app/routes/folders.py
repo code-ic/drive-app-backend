@@ -46,3 +46,107 @@ async def get_folder(parent_folder_id : str | None = None, current_user: dict = 
     except Exception as e:
         print("Logging Exception : ", e)
         raise HTTPException(status_code=500, detail=str(e))
+    
+@router.post("/me/folders")
+async def create_folder(parent_folder_id : str, new_folder_name : str, current_user: dict = Depends(get_current_user)):
+    try : 
+        username = current_user['username']
+        user_oid = await db["users"].find_one({"username" : username},{"_id" : 1})
+        parent_folder_id = ObjectId(parent_folder_id)
+        parent_folder = await db["folders"].find_one({"_id" : parent_folder_id, "owner" : user_oid["_id"]}, {"_id" : 1, "name" : 1})
+
+        # print("Input checks : ", username, user_id, parent_folder_id, parent_folder)
+
+        if parent_folder is None:
+            raise HTTPException(status_code=401, detail= "Invalid root folder to create new folder in")
+
+
+        base_folder = await db["folders"].find_one({"parent_folder_id" : parent_folder_id,
+                                                    "name" : new_folder_name,
+                                                    "owner" : user_oid["_id"]}, {"_id" : 1, "name" : 1})
+        
+        if base_folder:
+            for i in range(1, 100):
+                check_folder_name = new_folder_name + f" ({i})"
+                base_folder = await db["folders"].find_one({"parent_folder_id" : parent_folder_id,
+                                                    "name" : check_folder_name,
+                                                    "owner" : user_oid["_id"]}, {"_id" : 1, "name" : 1})
+               
+                if not base_folder:
+                    new_folder_name = check_folder_name
+                    break
+        
+        if base_folder: raise HTTPException(status_code=401, detail= "Folder with the same name exists")
+        # Check if a folder with the same name is present then create one with (1,2,3,4) whatever in front of the name
+
+        new_folder = {
+            "name" : new_folder_name,
+            "owner" : user_oid["_id"],
+            "parent_folder_id" : parent_folder_id,
+            "shared" : []
+        } 
+
+        resultID = await db["folders"].insert_one(new_folder)
+
+        if not resultID: 
+            raise HTTPException(status_code=401, detail= "Failed to create a new folder.")
+
+        return {"status" : 200, "result" : str(resultID)}
+
+    except Exception as e:
+        print("Logging Exception : ", e)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+    
+@router.patch("/me/folders")
+async def create_folder(folder_id : str, new_folder_name : str, current_user: dict = Depends(get_current_user)):
+    try : 
+        username = current_user['username']
+        user_oid = await db["users"].find_one({"username" : username},{"_id" : 1})
+        folder_id = ObjectId(folder_id)
+        base_folder = await db["folders"].find_one({"_id" : folder_id, "owner" : user_oid["_id"]}, {"_id" : 1, "name" : 1, "parent_folder_id" : 1})
+        base_folder_name = base_folder["name"]
+        if base_folder_name == new_folder_name:
+            return {"status" : 200, "result" : "New Folder name same as base folder name"}
+
+        print(base_folder["name"], folder_id)
+
+        if base_folder is None:
+            raise HTTPException(status_code=401, detail= "No folder with the ID/Name exists")
+        
+        parent_folder_id = base_folder["parent_folder_id"]
+
+        base_folder_new_name = await db["folders"].find_one({"parent_folder_id" : parent_folder_id,
+                                                    "name" : new_folder_name,
+                                                    "owner" : user_oid["_id"]}, {"_id" : 1, "name" : 1})
+
+        if base_folder_new_name:
+            for i in range(1, 100):
+                check_folder_name = new_folder_name + f" ({i})"
+                base_folder_new_name = await db["folders"].find_one({"parent_folder_id" : parent_folder_id,
+                                                    "name" : check_folder_name,
+                                                    "owner" : user_oid["_id"]}, {"_id" : 1, "name" : 1})
+               
+                if not base_folder_new_name:
+                    new_folder_name = check_folder_name
+                    break
+        
+        if base_folder_new_name: raise HTTPException(status_code=401, detail= "Folder with the same name exists")
+        # Check if a folder with the same name is present then create one with (1,2,3,4) whatever in front of the name
+        # print(base_folder_new_name) 
+        resultID = await db["folders"].update_one(
+            {"_id" : folder_id, "parent_folder_id" : parent_folder_id, "name" : base_folder_name},
+            {"$set" : {"name" : new_folder_name}}
+        )
+
+        if not resultID: 
+            raise HTTPException(status_code=401, detail= "Failed to create a new folder.")
+
+        return {"status" : 200, "result" : str(resultID)}
+
+    except Exception as e:
+        print("Logging Exception : ", e)
+        raise HTTPException(status_code=500, detail=str(e))
+
+ 
