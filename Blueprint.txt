@@ -17,8 +17,9 @@ Plan :
 [X] POST   /api/v1/me/folders                     # Create a new folder  
 [X] GET    /api/v1/me/folders/{folder_id}         # Get a specific folder by ID  
 [X] PATCH  /api/v1/me/folders/{folder_id}         # Rename/update folder  
-[ ] DELETE /api/v1/me/folders/{folder_id}         # Delete a folder  
-[ ] GET    /api/v1/me/folders/{folder_id}/files   # List files inside a folder  
+[X] DELETE /api/v1/me/folders/{folder_id}         # Delete a folder  
+[ ] GET    /api/v1/me/folders/{folder_id}/files   # List files inside a folder
+[ ] POST                                          # Move Folder from one folder to another
 
 # ------------------------------
 # 📄 File APIs

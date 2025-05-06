@@ -149,4 +149,39 @@ async def create_folder(folder_id : str, new_folder_name : str, current_user: di
         print("Logging Exception : ", e)
         raise HTTPException(status_code=500, detail=str(e))
 
- 
+
+@router.delete("/me/folders") 
+async def delete_folder(folder_id : str, current_user: dict = Depends(get_current_user)):
+    try:
+        username = current_user['username']
+        user_oid = await db["users"].find_one({"username" : username},{"_id" : 1})
+        folder_id = ObjectId(folder_id)
+        base_folder = await db["folders"].find_one({"_id" : folder_id, "owner" : user_oid["_id"]}, {"_id" : 1, "parent_folder_id" : 1})
+
+        folder_stack = [folder_id]
+        iteration_stack = [folder_id]
+
+        loop_limit = 100
+        loop_init = 0
+        while iteration_stack:
+            loop_init += 1
+            if loop_init > loop_limit: raise HTTPException(status_code=500, detail="Too Big of a folder to delete. Recursion depth reached post 100.")
+
+            curr_folder_id = iteration_stack.pop()
+            
+            temp_folder = db["folders"].find({"parent_folder_id" : curr_folder_id, "owner" : user_oid["_id"]}, {"_id" : 1})           
+            
+            async for temp_sub_folder in temp_folder:
+                iteration_stack.append(temp_sub_folder["_id"])
+                folder_stack.append(temp_sub_folder["_id"])
+
+        for _id in folder_stack:
+            # print(_id)
+            result = db["folders"].delete_one({"_id" : _id})
+
+        return {"status" : 200, "result" : "Successfully deleted the folder and sub-folders"} 
+
+    except Exception as e:
+        print("Logging Exception : ", e)
+        raise HTTPException(status_code=500, detail=str(e))
+
