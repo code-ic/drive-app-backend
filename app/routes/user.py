@@ -66,7 +66,7 @@ async def get_current_user(token : HTTPAuthorizationCredentials = Depends(securi
         if not userRecords:
             raise credentials_exception
 
-        return {"username" : userRecords["username"], "email" : userRecords["email"]}
+        return {"username" : userRecords["username"], "email" : userRecords["email"], "_id" : str(userRecords["_id"])}
 
     except Exception as e:
         print("Logging Exception : ", e)

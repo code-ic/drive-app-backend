@@ -97,8 +97,6 @@ async def create_folder(parent_folder_id : str, new_folder_name : str, current_u
         print("Logging Exception : ", e)
         raise HTTPException(status_code=500, detail=str(e))
 
-
-    
 @router.patch("/me/folders")
 async def create_folder(folder_id : str, new_folder_name : str, current_user: dict = Depends(get_current_user)):
     try : 
@@ -149,7 +147,6 @@ async def create_folder(folder_id : str, new_folder_name : str, current_user: di
         print("Logging Exception : ", e)
         raise HTTPException(status_code=500, detail=str(e))
 
-
 @router.delete("/me/folders") 
 async def delete_folder(folder_id : str, current_user: dict = Depends(get_current_user)):
     try:
@@ -185,3 +182,24 @@ async def delete_folder(folder_id : str, current_user: dict = Depends(get_curren
         print("Logging Exception : ", e)
         raise HTTPException(status_code=500, detail=str(e))
 
+@router.get("/me/folders/{folder_id}/files")
+async def get_files_in_folder(folder_id : str, current_user: dict = Depends(get_current_user)):
+    try:
+        # print(current_user)
+        current_user_oid = ObjectId(current_user["_id"])
+        files = db["files"].find({"parent_folder_id" : ObjectId(folder_id) , "owner" : current_user_oid})
+        files_in_current_folder = []
+        async for file in files:
+            file.pop("shared", None)
+            file.pop("owner", None)
+            file["parent_folder_id"] = str(file["parent_folder_id"])
+            file["_id"] = str(file["_id"])
+
+            # print(file)
+            files_in_current_folder.append(file)
+
+        return {"status": 200, "detail": files_in_current_folder}
+    
+    except Exception as e:
+        print("Logging Exception : ", e)
+        raise HTTPException(status_code=500, detail=str(e))
